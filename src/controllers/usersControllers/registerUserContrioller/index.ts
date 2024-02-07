@@ -3,6 +3,9 @@ import { AppDataSource } from "../../../data-source";
 import bcrypt from "bcrypt";
 
 const registerUserController = async (req, res) => {
+ 
+  await AppDataSource.initialize()
+  
   const { body } = req;
 
   const user = new User();
@@ -14,7 +17,9 @@ const registerUserController = async (req, res) => {
 
       await AppDataSource.manager.save(user);
 
-      res.status(201).json({
+      await AppDataSource.destroy();
+
+      return res.status(201).json({
         message: "Olá, usuários!",
       });
     });
