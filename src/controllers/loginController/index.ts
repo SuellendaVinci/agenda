@@ -4,6 +4,9 @@ import { AppDataSource } from "../../data-source";
 import jwt from "jsonwebtoken";
 
 const loginController = async (req, res) => {
+  
+  await AppDataSource.initialize();
+  
   const { body } = req;
 
   const userRepository = AppDataSource.getRepository(User);
@@ -14,8 +17,9 @@ const loginController = async (req, res) => {
     return res.status(404).json({ error: "usuário ou senha inválida" });
   }
 
-  bcrypt.compare(body.password, userFound.password, (err, result) => {
+  bcrypt.compare(body.password, userFound.password, async (err, result) => {
     if (!result) {
+      await AppDataSource.destroy();
       return res.status(404).json({ error: "usuário ou senha inválida" });
     }
 
@@ -23,6 +27,8 @@ const loginController = async (req, res) => {
       { id: userFound.id, name: userFound.name },
       process.env.PRIVATE_KEY
     );
+
+    await AppDataSource.destroy();
 
     return res.json({
       id: userFound.id,
